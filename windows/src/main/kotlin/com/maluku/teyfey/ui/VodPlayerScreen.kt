@@ -150,7 +150,7 @@ fun VodPlayerScreen(play: VodPlay, onIndex: (Int) -> Unit, onBack: () -> Unit) {
         }
     }
 
-    BackHandler { if (WindowCtl.isFullscreen) WindowCtl.setFullscreen(false) else onBack() }
+    BackHandler { onBack() }   // Esc = straight back (position is saved)
 
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }

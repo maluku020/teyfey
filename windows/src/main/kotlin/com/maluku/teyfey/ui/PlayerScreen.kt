@@ -105,7 +105,15 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
     }
 
     // Esc: first leave full screen (window stays open), then back to the list
-    BackHandler { if (WindowCtl.isFullscreen) WindowCtl.setFullscreen(false) else handleBack() }
+    // Esc = straight back to the menu (the window becomes small again when the player closes)
+    BackHandler { onBack() }
+    // Leaving full screen in another way (F11, F, double-click) also goes back to the menu
+    LaunchedEffect(Unit) {
+        var seenFull = false
+        androidx.compose.runtime.snapshotFlow { WindowCtl.isFullscreen }.collect { full ->
+            if (full) seenFull = true else if (seenFull) onBack()
+        }
+    }
     LaunchedEffect(Unit) { pb.setMuted(false) }
 
     val focus = remember { FocusRequester() }
