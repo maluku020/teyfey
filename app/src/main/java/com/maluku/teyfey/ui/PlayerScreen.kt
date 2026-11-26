@@ -122,7 +122,10 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
     }
 
     BackHandler { handleBack() }
-    LaunchedEffect(Unit) { pb.setMuted(false) }
+    // Sound on/off in full screen: ◀ ▶ or the mute key on the remote, or tap the speaker icon
+    var muted by remember { mutableStateOf(false) }
+    LaunchedEffect(muted) { pb.setMuted(muted) }
+    DisposableEffect(Unit) { onDispose { pb.setMuted(App.instance.repo.previewMuted.value) } }
 
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
@@ -140,8 +143,14 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
                 when (e.key.nativeKeyCode) {
                     AKeyEvent.KEYCODE_DPAD_UP, AKeyEvent.KEYCODE_CHANNEL_DOWN -> { zap(-1); true }
                     AKeyEvent.KEYCODE_DPAD_DOWN, AKeyEvent.KEYCODE_CHANNEL_UP -> { zap(1); true }
+                    AKeyEvent.KEYCODE_DPAD_LEFT, AKeyEvent.KEYCODE_DPAD_RIGHT, AKeyEvent.KEYCODE_MUTE,
+                    AKeyEvent.KEYCODE_VOLUME_MUTE -> {
+                        muted = !muted
+                        android.widget.Toast.makeText(view.context, if (muted) "Geluid uit" else "Geluid aan", android.widget.Toast.LENGTH_SHORT).show()
+                        true
+                    }
                     AKeyEvent.KEYCODE_DPAD_CENTER, AKeyEvent.KEYCODE_ENTER, AKeyEvent.KEYCODE_NUMPAD_ENTER,
-                    AKeyEvent.KEYCODE_DPAD_LEFT, AKeyEvent.KEYCODE_DPAD_RIGHT, AKeyEvent.KEYCODE_INFO -> {
+                    AKeyEvent.KEYCODE_INFO -> {
                         toggleOverlay()
                         true
                     }
@@ -219,10 +228,24 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
                     Spacer(Modifier.width(18.dp))
                     Column(horizontalAlignment = Alignment.End) {
                         Text(timeOf(now), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
-                        Text("▲▼ zappen", color = Z.textDim, fontSize = 11.sp)
+                        Text("▲▼ zappen  ·  ◀▶ geluid", color = Z.textDim, fontSize = 11.sp)
                     }
                 }
             }
+        }
+
+        // Speaker icon: always visible while muted, and while the info bar is shown (tap = toggle)
+        if (muted || overlay) {
+            androidx.compose.material3.Icon(
+                if (muted) androidx.compose.material.icons.Icons.AutoMirrored.Filled.VolumeOff
+                else androidx.compose.material.icons.Icons.AutoMirrored.Filled.VolumeUp,
+                if (muted) "Geluid aan" else "Geluid uit",
+                tint = if (muted) Z.fav else Color.White,
+                modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
+                    .background(Color(0x88000000), RoundedCornerShape(8.dp))
+                    .pointerInput(Unit) { detectTapGestures(onTap = { muted = !muted }) }
+                    .padding(8.dp).size(32.dp),
+            )
         }
 
         if (overlay && pb.castSupported) {

@@ -165,6 +165,7 @@ fun HomeScreen(
         }
         IconButton(onClick = onGuide, modifier = Modifier.tvIconFocus()) { Icon(Icons.Filled.DateRange, "TV-gids", tint = Z.text) }
         IconButton(onClick = onSettings, modifier = Modifier.tvIconFocus()) { Icon(Icons.Filled.Settings, "Instellingen", tint = Z.text) }
+        MuteButton()
     }
 
     val searchFocus = remember { androidx.compose.ui.focus.FocusRequester() }
@@ -228,7 +229,6 @@ fun HomeScreen(
                         NowInfo(current, current?.let { epg[it.id] }, now, detailed = true)
                         Spacer(Modifier.height(14.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            MuteButton()
                             FavoriteButton(current)
                             CatchupButton(current, onCatchup)
                         }
@@ -247,7 +247,6 @@ fun HomeScreen(
                 Preview(Modifier.fillMaxWidth(), onFullscreen)
                 NowInfo(current, current?.let { epg[it.id] }, now, detailed = false, modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp))
                 Row(Modifier.padding(start = 14.dp, bottom = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MuteButton()
                     FavoriteButton(current)
                     CatchupButton(current, onCatchup)
                 }
@@ -336,22 +335,16 @@ private fun Preview(modifier: Modifier, onFullscreen: () -> Unit) {
     }
 }
 
-/** Sound on/off for the preview, as a pill next to the Favoriet button (reachable with the TV remote). */
+/** Sound on/off for the preview: icon next to the gear (reachable with the TV remote). */
 @Composable
 fun MuteButton(modifier: Modifier = Modifier) {
     val repo = App.instance.repo
     val muted by repo.previewMuted.collectAsState()
-    Box(
-        modifier
-            .tvClickable(shape = RoundedCornerShape(50)) { repo.setPreviewMuted(!muted) }
-            .background(Z.surfaceHi, RoundedCornerShape(50))
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center,
-    ) {
+    IconButton(onClick = { repo.setPreviewMuted(!muted) }, modifier = modifier.tvIconFocus()) {
         Icon(
             if (muted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
             if (muted) "Geluid aan" else "Geluid uit",
-            tint = Z.text, modifier = Modifier.size(20.dp),
+            tint = if (muted) Z.fav else Z.text,
         )
     }
 }
