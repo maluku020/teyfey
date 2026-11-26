@@ -141,10 +141,12 @@ class PlaybackManager(private val ctx: Context) {
         // Start fast (1s), but keep a healthy buffer while watching to avoid stutter.
         val loadControl = DefaultLoadControl.Builder()
             .setBufferDurationsMs(
-                /* minBufferMs = */ 15_000,
-                /* maxBufferMs = */ 50_000,
-                /* bufferForPlaybackMs = */ 1_000,
-                /* bufferForPlaybackAfterRebufferMs = */ 3_000,
+                // Live IPTV arrives in real time, so the only real cushion is a bit of delay at the start.
+                // Wait ~2.5 s before playing (and 6 s after a hiccup) so short server stalls don't show the spinner.
+                /* minBufferMs = */ 30_000,
+                /* maxBufferMs = */ 60_000,
+                /* bufferForPlaybackMs = */ 2_500,
+                /* bufferForPlaybackAfterRebufferMs = */ 6_000,
             )
             .setPrioritizeTimeOverSizeThresholds(true)
             .build()
