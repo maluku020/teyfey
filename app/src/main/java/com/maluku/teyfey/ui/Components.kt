@@ -368,8 +368,8 @@ fun SubscriptionWarning(modifier: Modifier = Modifier) {
             .padding(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Text(
-            if (days < 0) "Je abonnement is verlopen (${dateOf(acc!!.expiresAt!!)})."
-            else "Je abonnement loopt af op ${dateOf(acc!!.expiresAt!!)} — nog $days ${if (days == 1L) "dag" else "dagen"}.",
+            if (days < 0) "Abbo gestopt op ${dateOf(acc!!.expiresAt!!)}"
+            else "Abbo stopt ${dateOf(acc!!.expiresAt!!)} — nog $days ${if (days == 1L) "dag" else "dagen"}",
             color = Z.text,
             fontSize = 13.sp,
         )

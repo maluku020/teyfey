@@ -186,8 +186,8 @@ fun CatchupButton(channel: Channel?, onClick: (Channel) -> Unit, modifier: Modif
         Icon(Icons.Filled.History, null, tint = Z.focus, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(8.dp))
         Text(
-            "Terugkijken (${channel.archiveDays} ${if (channel.archiveDays == 1) "dag" else "dagen"})",
-            color = Z.text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+            "Terugkijken",
+            color = Z.text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false,
         )
     }
 }
@@ -215,6 +215,6 @@ fun FavoriteButton(channel: Channel?, modifier: Modifier = Modifier) {
             null, tint = Z.fav, modifier = Modifier.size(18.dp),
         )
         Spacer(Modifier.width(8.dp))
-        Text(if (fav) "Favoriet" else "Favoriet maken", color = Z.text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+        Text(if (fav) "Favoriet" else "Favoriet maken", color = Z.text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false)
     }
 }

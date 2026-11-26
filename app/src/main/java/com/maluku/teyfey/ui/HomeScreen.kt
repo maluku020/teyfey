@@ -45,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusRequester
@@ -188,7 +189,7 @@ fun HomeScreen(
         val panelWidth = maxWidth * 0.36f
         Column(Modifier.fillMaxSize()) {
             if (busy != null) LinearProgressIndicator(Modifier.fillMaxWidth().height(2.dp), color = Z.accent)
-            if (!wide) SubscriptionWarning()
+            SubscriptionWarning()
 
             if (wide) {
                 // ---------- TV / landscape: groups | channels | preview ----------
@@ -225,15 +226,16 @@ fun HomeScreen(
                             .background(Z.panel).padding(14.dp)
                     ) {
                         Preview(Modifier.fillMaxWidth(), onFullscreen)
-                        Spacer(Modifier.height(14.dp))
-                        NowInfo(current, current?.let { epg[it.id] }, now, detailed = true)
-                        Spacer(Modifier.height(14.dp))
+                        Spacer(Modifier.height(10.dp))
+                        // Buttons directly under the preview, so a long description can never push them off screen
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             FavoriteButton(current)
                             CatchupButton(current, onCatchup)
                         }
-                        Spacer(Modifier.weight(1f))
-                        SubscriptionInfo(Modifier.align(Alignment.End))
+                        Spacer(Modifier.height(12.dp))
+                        Box(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
+                            NowInfo(current, current?.let { epg[it.id] }, now, detailed = true)
+                        }
                     }
                 }
             } else {
