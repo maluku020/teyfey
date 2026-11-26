@@ -1,5 +1,7 @@
 package com.maluku.teyfey.ui
 
+import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
@@ -54,6 +56,7 @@ import com.maluku.teyfey.data.liveAt
 import com.maluku.teyfey.data.nextAfter
 import kotlinx.coroutines.delay
 
+@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
     val app = App.instance
@@ -129,6 +132,10 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
         muted = !muted
         Toaster.show(if (muted) "Geluid uit" else "Geluid aan")
     }
+    DisposableEffect(Unit) {
+        PlayerMute.onToggle = { toggleMute(); showOverlay() }
+        onDispose { PlayerMute.onToggle = null }
+    }
 
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
@@ -160,6 +167,7 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
                     else -> false
                 }
             }
+            .onPointerEvent(androidx.compose.ui.input.pointer.PointerEventType.Move) { showOverlay() }
             .pointerInput(Unit) {
                 detectTapGestures(onTap = { toggleOverlay() }, onDoubleTap = { WindowCtl.toggleFullscreen() })
             }
@@ -249,7 +257,7 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
                             .background(Z.focus.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
                         else Modifier.background(Color(0x88000000), RoundedCornerShape(8.dp))
                     )
-                    .pointerInput(Unit) { detectTapGestures(onTap = { toggleMute() }) }
+                    .clickable { toggleMute(); showOverlay() }
                     .padding(8.dp).size(if (speakerSel && overlay) 40.dp else 32.dp),
             )
             if (speakerSel && overlay) Text(

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.window.WindowDraggableArea
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -78,20 +77,43 @@ fun main() = application {
 
 @Composable
 private fun FrameWindowScope.TitleBar(onClose: () -> Unit) {
-    WindowDraggableArea {
+    Row(
+        Modifier.fillMaxWidth().height(34.dp).background(Z.panel),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        // Drag area: moves the window with the real mouse position, so it also works across monitors
         Row(
-            Modifier.fillMaxWidth().height(34.dp).background(Z.panel)
-                .pointerInput(Unit) { detectTapGestures(onDoubleTap = { WindowCtl.toggleMaximize() }) },
+            Modifier.weight(1f).height(34.dp).pointerInput(Unit) {
+                var startMouse = java.awt.Point()
+                var startWin = java.awt.Point()
+                detectDragGestures(
+                    onDragStart = {
+                        val w = WindowCtl.window
+                        if (w != null && WindowCtl.isMaximized) {
+                            // Dragging a maximized window: restore it under the mouse first
+                            WindowCtl.toggleMaximize()
+                            val m = java.awt.MouseInfo.getPointerInfo().location
+                            w.setLocation(m.x - w.width / 2, m.y - 17)
+                        }
+                        startMouse = java.awt.MouseInfo.getPointerInfo().location
+                        startWin = WindowCtl.window?.location ?: java.awt.Point()
+                    },
+                ) { change, _ ->
+                    change.consume()
+                    val m = java.awt.MouseInfo.getPointerInfo().location
+                    WindowCtl.window?.setLocation(startWin.x + (m.x - startMouse.x), startWin.y + (m.y - startMouse.y))
+                }
+            }.pointerInput(Unit) { detectTapGestures(onDoubleTap = { WindowCtl.toggleMaximize() }) },
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Spacer(Modifier.width(10.dp))
             Image(painterResource("icon.png"), null, Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Teyfey", color = Z.textDim, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-            BarButton("—", "Minimaliseren") { WindowCtl.minimize() }
-            BarButton(if (WindowCtl.isMaximized) "❐" else "☐", "Maximaliseren") { WindowCtl.toggleMaximize() }
-            BarButton("✕", "Sluiten", danger = true, onClick = onClose)
+            Text("Teyfey", color = Z.textDim, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
         }
+        BarButton("—", "Minimaliseren") { WindowCtl.minimize() }
+        BarButton(if (WindowCtl.isMaximized) "❐" else "☐", "Maximaliseren") { WindowCtl.toggleMaximize() }
+        BarButton("✕", "Sluiten", danger = true, onClick = onClose)
     }
 }
 

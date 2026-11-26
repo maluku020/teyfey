@@ -125,6 +125,12 @@ object WindowCtl {
     fun minimize() { window?.extendedState = java.awt.Frame.ICONIFIED }
 }
 
+// ---------------------------------------------------------------- player mute (M), works wherever the focus is
+
+object PlayerMute {
+    var onToggle: (() -> Unit)? = null
+}
+
 // ---------------------------------------------------------------- keyboard
 
 /** Keyboard like a TV remote: arrows move the yellow focus, Enter = OK, Esc = back, F11 = full screen. */
@@ -138,6 +144,7 @@ object KeyRouter {
                 if (WindowCtl.isFullscreen) { WindowCtl.setFullscreen(false); true } else false
             }
             Key.F11 -> { WindowCtl.toggleFullscreen(); true }
+            Key.M -> PlayerMute.onToggle?.let { it(); true } ?: false
             Key.DirectionUp -> focusManager?.moveFocus(FocusDirection.Up) ?: false
             Key.DirectionDown -> focusManager?.moveFocus(FocusDirection.Down) ?: false
             Key.DirectionLeft -> focusManager?.moveFocus(FocusDirection.Left) ?: false

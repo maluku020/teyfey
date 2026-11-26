@@ -1,5 +1,7 @@
 package com.maluku.teyfey.ui
 
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -152,6 +154,14 @@ fun VodPlayerScreen(play: VodPlay, onIndex: (Int) -> Unit, onBack: () -> Unit) {
 
     BackHandler { onBack() }   // Esc = straight back (position is saved)
 
+    var muted by remember { mutableStateOf(false) }
+    LaunchedEffect(muted) { pb.setMuted(muted) }
+    fun toggleMute() { muted = !muted; Toaster.show(if (muted) "Geluid uit" else "Geluid aan"); poke() }
+    DisposableEffect(Unit) {
+        PlayerMute.onToggle = { toggleMute() }
+        onDispose { PlayerMute.onToggle = null }
+    }
+
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
 
@@ -255,6 +265,12 @@ fun VodPlayerScreen(play: VodPlay, onIndex: (Int) -> Unit, onBack: () -> Unit) {
                         Icon(Icons.Filled.Forward10, "10 s vooruit", tint = Color.White)
                     }
                     Spacer(Modifier.weight(1f))
+                    IconButton(onClick = { toggleMute() }, modifier = Modifier.tvIconFocus()) {
+                        Icon(
+                            if (muted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
+                            if (muted) "Geluid aan" else "Geluid uit", tint = if (muted) Z.fav else Color.White,
+                        )
+                    }
                     TrackMenu(Icons.Filled.Audiotrack, "Audio", { pb.audioTracks() }, { pb.audioTrack() }, { pb.setAudioTrack(it) }, ::poke)
                     TrackMenu(Icons.Filled.Subtitles, "Ondertitels", { pb.subtitleTracks() }, { pb.subtitleTrack() }, { pb.setSubtitleTrack(it) }, ::poke)
                     IconButton(onClick = { WindowCtl.toggleFullscreen(); poke() }, modifier = Modifier.tvIconFocus()) {
