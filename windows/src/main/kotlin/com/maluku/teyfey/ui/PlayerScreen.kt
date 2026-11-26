@@ -1,5 +1,10 @@
 package com.maluku.teyfey.ui
 
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.border
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -114,7 +119,16 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
             if (full) seenFull = true else if (seenFull) onBack()
         }
     }
-    LaunchedEffect(Unit) { pb.setMuted(false) }
+    // Sound on/off in full screen: M, or ◀ ▶ to select the speaker + Enter, or click the speaker
+    var muted by remember { mutableStateOf(false) }
+    LaunchedEffect(muted) { pb.setMuted(muted) }
+    DisposableEffect(Unit) { onDispose { pb.setMuted(App.instance.repo.previewMuted.value) } }
+    var speakerSel by remember { mutableStateOf(false) }
+    LaunchedEffect(overlay) { if (!overlay) speakerSel = false }
+    fun toggleMute() {
+        muted = !muted
+        Toaster.show(if (muted) "Geluid uit" else "Geluid aan")
+    }
 
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
@@ -132,8 +146,14 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
                 when (e.key) {
                     Key.DirectionUp, Key.PageUp -> { zap(-1); true }
                     Key.DirectionDown, Key.PageDown -> { zap(1); true }
-                    Key.Enter, Key.NumPadEnter, Key.Spacebar, Key.DirectionLeft, Key.DirectionRight, Key.I -> {
-                        toggleOverlay()
+                    Key.DirectionLeft, Key.DirectionRight -> {
+                        speakerSel = if (overlay) !speakerSel else true
+                        showOverlay()
+                        true
+                    }
+                    Key.M -> { toggleMute(); true }
+                    Key.Enter, Key.NumPadEnter, Key.Spacebar, Key.I -> {
+                        if (overlay && speakerSel) { toggleMute(); showOverlay() } else toggleOverlay()
                         true
                     }
                     Key.F -> { WindowCtl.toggleFullscreen(); true }
@@ -215,6 +235,29 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
                     }
                 }
             }
+        }
+
+        if (muted || overlay) {
+            Icon(
+                if (muted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
+                if (muted) "Geluid aan" else "Geluid uit",
+                tint = if (muted) Z.fav else Color.White,
+                modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
+                    .then(
+                        if (speakerSel && overlay) Modifier
+                            .border(4.dp, Z.focus, RoundedCornerShape(10.dp))
+                            .background(Z.focus.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
+                        else Modifier.background(Color(0x88000000), RoundedCornerShape(8.dp))
+                    )
+                    .pointerInput(Unit) { detectTapGestures(onTap = { toggleMute() }) }
+                    .padding(8.dp).size(if (speakerSel && overlay) 40.dp else 32.dp),
+            )
+            if (speakerSel && overlay) Text(
+                if (muted) "Enter = geluid aan" else "Enter = geluid uit",
+                color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.align(Alignment.TopStart).padding(start = 92.dp, top = 30.dp)
+                    .background(Color(0x88000000), RoundedCornerShape(6.dp)).padding(horizontal = 8.dp, vertical = 4.dp),
+            )
         }
 
         if (overlay && pb.castSupported) {

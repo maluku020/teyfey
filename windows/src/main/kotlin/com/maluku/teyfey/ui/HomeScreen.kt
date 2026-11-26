@@ -43,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusRequester
@@ -160,6 +161,7 @@ fun HomeScreen(
         }
         IconButton(onClick = onGuide, modifier = Modifier.tvIconFocus()) { Icon(Icons.Filled.DateRange, "TV-gids", tint = Z.text) }
         IconButton(onClick = onSettings, modifier = Modifier.tvIconFocus()) { Icon(Icons.Filled.Settings, "Instellingen", tint = Z.text) }
+        MuteButton()
     }
 
     val searchFocus = remember { androidx.compose.ui.focus.FocusRequester() }
@@ -219,12 +221,14 @@ fun HomeScreen(
                             .background(Z.panel).padding(14.dp)
                     ) {
                         Preview(Modifier.fillMaxWidth(), onFullscreen)
-                        Spacer(Modifier.height(14.dp))
-                        NowInfo(current, current?.let { epg[it.id] }, now, detailed = true)
-                        Spacer(Modifier.height(14.dp))
+                        Spacer(Modifier.height(10.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             FavoriteButton(current)
                             CatchupButton(current, onCatchup)
+                        }
+                        Spacer(Modifier.height(12.dp))
+                        Box(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
+                            NowInfo(current, current?.let { epg[it.id] }, now, detailed = true)
                         }
                     }
                 }
@@ -326,17 +330,20 @@ private fun Preview(modifier: Modifier, onFullscreen: () -> Unit) {
         val repo = App.instance.repo
         val muted by repo.previewMuted.collectAsState()
         LaunchedEffect(muted) { pb.setMuted(muted) }
-        IconButton(
-            onClick = { repo.setPreviewMuted(!muted) },
-            modifier = Modifier.align(Alignment.BottomStart).padding(4.dp).tvIconFocus(),
-        ) {
-            Icon(
-                if (muted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
-                if (muted) "Geluid aan" else "Geluid uit",
-                tint = Color.White,
-                modifier = Modifier.background(Color(0x66000000), RoundedCornerShape(6.dp)).padding(4.dp).size(20.dp),
-            )
-        }
+    }
+}
+
+/** Sound on/off for the preview: icon next to the gear. */
+@Composable
+fun MuteButton(modifier: Modifier = Modifier) {
+    val repo = App.instance.repo
+    val muted by repo.previewMuted.collectAsState()
+    IconButton(onClick = { repo.setPreviewMuted(!muted) }, modifier = modifier.tvIconFocus()) {
+        Icon(
+            if (muted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
+            if (muted) "Geluid aan" else "Geluid uit",
+            tint = if (muted) Z.fav else Z.text,
+        )
     }
 }
 

@@ -195,7 +195,7 @@ class PlaybackManager {
         val opts = ArrayList<String>()
         opts += ":http-user-agent=${Net.USER_AGENT}"
         opts += ":http-reconnect"
-        opts += if (p.live) ":network-caching=1500" else ":network-caching=3000"
+        opts += if (p.live) ":network-caching=3000" else ":network-caching=6000"  // bigger cushion = fewer spinners
         if (!p.live) {
             opts += langOptions
             if (startMs > 0) opts += ":start-time=${startMs / 1000}"
