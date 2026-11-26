@@ -53,6 +53,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.maluku.teyfey.App
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import com.maluku.teyfey.data.liveAt
 import com.maluku.teyfey.data.nextAfter
 import kotlinx.coroutines.delay
@@ -237,8 +240,8 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
         // Speaker icon: always visible while muted, and while the info bar is shown (tap = toggle)
         if (muted || overlay) {
             androidx.compose.material3.Icon(
-                if (muted) androidx.compose.material.icons.Icons.AutoMirrored.Filled.VolumeOff
-                else androidx.compose.material.icons.Icons.AutoMirrored.Filled.VolumeUp,
+                if (muted) Icons.AutoMirrored.Filled.VolumeOff
+                else Icons.AutoMirrored.Filled.VolumeUp,
                 if (muted) "Geluid aan" else "Geluid uit",
                 tint = if (muted) Z.fav else Color.White,
                 modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
