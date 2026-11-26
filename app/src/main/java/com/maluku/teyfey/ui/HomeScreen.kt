@@ -229,6 +229,7 @@ fun HomeScreen(
                         NowInfo(current, current?.let { epg[it.id] }, now, detailed = true)
                         Spacer(Modifier.height(14.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            MuteButton()
                             FavoriteButton(current)
                             CatchupButton(current, onCatchup)
                         }
@@ -247,6 +248,7 @@ fun HomeScreen(
                 Preview(Modifier.fillMaxWidth(), onFullscreen)
                 NowInfo(current, current?.let { epg[it.id] }, now, detailed = false, modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp))
                 Row(Modifier.padding(start = 14.dp, bottom = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    MuteButton()
                     FavoriteButton(current)
                     CatchupButton(current, onCatchup)
                 }
@@ -332,17 +334,26 @@ private fun Preview(modifier: Modifier, onFullscreen: () -> Unit) {
         val repo = App.instance.repo
         val muted by repo.previewMuted.collectAsState()
         LaunchedEffect(muted) { pb.setMuted(muted) }
-        IconButton(
-            onClick = { repo.setPreviewMuted(!muted) },
-            modifier = Modifier.align(Alignment.BottomStart).padding(4.dp).tvIconFocus(),
-        ) {
-            Icon(
-                if (muted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
-                if (muted) "Geluid aan" else "Geluid uit",
-                tint = Color.White,
-                modifier = Modifier.background(Color(0x66000000), RoundedCornerShape(6.dp)).padding(4.dp).size(20.dp),
-            )
-        }
+    }
+}
+
+/** Sound on/off for the preview, as a pill next to the Favoriet button (reachable with the TV remote). */
+@Composable
+fun MuteButton(modifier: Modifier = Modifier) {
+    val repo = App.instance.repo
+    val muted by repo.previewMuted.collectAsState()
+    Box(
+        modifier
+            .tvClickable(shape = RoundedCornerShape(50)) { repo.setPreviewMuted(!muted) }
+            .background(Z.surfaceHi, RoundedCornerShape(50))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            if (muted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
+            if (muted) "Geluid aan" else "Geluid uit",
+            tint = Z.text, modifier = Modifier.size(20.dp),
+        )
     }
 }
 
