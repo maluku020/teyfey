@@ -389,7 +389,7 @@ fun SubscriptionInfo(modifier: Modifier = Modifier) {
         else -> Z.text
     }
     androidx.compose.foundation.layout.Column(modifier, horizontalAlignment = Alignment.End) {
-        Text(if (days != null && days < 0) "Abbo verlopen" else "Abbo eindigt", color = Z.textDim, fontSize = 13.sp)
+        Text(if (days != null && days < 0) "Abbo gestopt" else "Abbo stopt", color = Z.textDim, fontSize = 13.sp)
         Text(
             a.expiresAt?.let { dateOf(it) } ?: "Onbeperkt",
             color = color, fontSize = 17.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
