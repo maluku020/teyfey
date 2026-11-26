@@ -1,0 +1,41 @@
+name: Build Teyfey APK
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee build.log
+          exit ${PIPESTATUS[0]}
+      - name: Version
+        id: v
+        run: echo "v=1.$((5 + GITHUB_RUN_NUMBER))" >> "$GITHUB_OUTPUT"
+      - run: cp app/build/outputs/apk/release/app-release.apk Teyfey.apk
+      - name: Publish release (tinyurl.com/teyfey always gets the newest)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.v }}
+          name: Teyfey ${{ steps.v.outputs.v }}
+          body: ${{ github.event.head_commit.message }}
+          files: Teyfey.apk
+          make_latest: true
+      - name: Keep the build log when it fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
