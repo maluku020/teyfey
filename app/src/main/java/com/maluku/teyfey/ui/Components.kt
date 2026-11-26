@@ -376,6 +376,27 @@ fun SubscriptionWarning(modifier: Modifier = Modifier) {
     }
 }
 
+/** Small "Abbo eindigt / <date>" block for the bottom-right of the TV layout. */
+@Composable
+fun SubscriptionInfo(modifier: Modifier = Modifier) {
+    val acc by com.maluku.teyfey.App.instance.repo.account.collectAsState()
+    val a = acc ?: return
+    val days = a.daysLeft()
+    val color = when {
+        days == null -> Z.text
+        days <= 3 -> Z.live
+        days <= 14 -> Z.fav
+        else -> Z.text
+    }
+    androidx.compose.foundation.layout.Column(modifier, horizontalAlignment = Alignment.End) {
+        Text(if (days != null && days < 0) "Abbo verlopen" else "Abbo eindigt", color = Z.textDim, fontSize = 13.sp)
+        Text(
+            a.expiresAt?.let { dateOf(it) } ?: "Onbeperkt",
+            color = color, fontSize = 17.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+        )
+    }
+}
+
 fun dateOf(ms: Long): String =
     SimpleDateFormat("d MMMM yyyy", Locale("nl", "NL")).format(Date(ms))
 

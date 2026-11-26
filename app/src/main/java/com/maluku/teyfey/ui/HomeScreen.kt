@@ -188,7 +188,7 @@ fun HomeScreen(
         val panelWidth = maxWidth * 0.36f
         Column(Modifier.fillMaxSize()) {
             if (busy != null) LinearProgressIndicator(Modifier.fillMaxWidth().height(2.dp), color = Z.accent)
-            SubscriptionWarning()
+            if (!wide) SubscriptionWarning()
 
             if (wide) {
                 // ---------- TV / landscape: groups | channels | preview ----------
@@ -232,6 +232,8 @@ fun HomeScreen(
                             FavoriteButton(current)
                             CatchupButton(current, onCatchup)
                         }
+                        Spacer(Modifier.weight(1f))
+                        SubscriptionInfo(Modifier.align(Alignment.End))
                     }
                 }
             } else {
