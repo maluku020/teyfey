@@ -197,7 +197,6 @@ fun HomeScreen(
                         SectionNavColumn(Section.LIVE, onSection)
                         ToolRow(Icons.Filled.Search, "Zoek kanaal") { searching = true }
                         ToolRow(Icons.Filled.DateRange, "TV-gids", onGuide)
-                        ToolRow(Icons.Filled.Settings, "Instellingen", onSettings)
                         SidebarDivider()
                         LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = 12.dp)) {
                             val pick: (String) -> Unit = { g -> searching = false; query = ""; onGroup(g) }

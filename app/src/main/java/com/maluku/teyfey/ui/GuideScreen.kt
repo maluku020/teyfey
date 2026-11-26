@@ -24,6 +24,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -65,6 +66,7 @@ fun GuideScreen(
     onGroup: (String) -> Unit,
     onWatch: () -> Unit,
     onBack: () -> Unit,
+    onSettings: () -> Unit = {},
 ) {
     val app = App.instance
     val repo = app.repo
@@ -115,6 +117,9 @@ fun GuideScreen(
                 color = Z.textDim, fontSize = 14.sp, modifier = Modifier.weight(1f),
             )
             busy?.let { Text(it, color = Z.textDim, fontSize = 12.sp) }
+            IconButton(onClick = onSettings, modifier = Modifier.tvIconFocus()) {
+                Icon(Icons.Filled.Settings, "Instellingen", tint = Z.text)
+            }
         }
 
         GroupChip(groupLabel) { picker = true }

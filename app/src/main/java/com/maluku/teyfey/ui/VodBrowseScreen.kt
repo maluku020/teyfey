@@ -201,7 +201,6 @@ fun VodBrowseScreen(
                     SectionNavColumn(section, onSection)
                     ToolRow(Icons.Filled.Search, if (kind == VodKind.MOVIES) "Zoek film" else "Zoek serie") { searching = true }
                     ToolRow(Icons.Filled.Refresh, "Lijst vernieuwen") { reload(true) }
-                    ToolRow(Icons.Filled.Settings, "Instellingen", onSettings)
                     SidebarDivider()
                     LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = 12.dp)) {
                         val pick: (String) -> Unit = { id -> searching = false; query = ""; cat = id }

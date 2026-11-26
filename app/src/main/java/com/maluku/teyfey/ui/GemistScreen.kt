@@ -127,7 +127,6 @@ fun GemistScreen(
                     Brand(24.dp, Modifier.padding(start = 18.dp, top = 14.dp, bottom = 4.dp))
                     SectionNavColumn(Section.GEMIST, onSection)
                     ToolRow(Icons.Filled.Search, "Zoek kanaal") { searching = true }
-                    ToolRow(Icons.Filled.Settings, "Instellingen", onSettings)
                     SidebarDivider()
                     LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = 12.dp)) {
                         val sel = group.takeIf { !searching }
@@ -147,6 +146,9 @@ fun GemistScreen(
                         }
                         IconButton(onClick = { searching = !searching; if (!searching) query = "" }, modifier = Modifier.tvIconFocus()) {
                             Icon(if (searching) Icons.Filled.Close else Icons.Filled.Search, "Zoeken", tint = Z.text)
+                        }
+                        IconButton(onClick = onSettings, modifier = Modifier.tvIconFocus()) {
+                            Icon(Icons.Filled.Settings, "Instellingen", tint = Z.text)
                         }
                     }
                     searchField()

@@ -151,6 +151,7 @@ fun AppRoot() {
                 onGroup = setGroup,
                 onWatch = { screen = Screen.Player },
                 onBack = { screen = Screen.Home },
+                onSettings = { screen = Screen.Settings },
             )
             Screen.Player -> PlayerScreen(
                 now = now,
