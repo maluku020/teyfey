@@ -7,6 +7,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -127,6 +128,12 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
     BackHandler { handleBack() }
     // Sound on/off in full screen: ◀ ▶ or the mute key on the remote, or tap the speaker icon
     var muted by remember { mutableStateOf(false) }
+    var speakerSel by remember { mutableStateOf(false) }   // speaker icon selected with ◀ ▶
+    LaunchedEffect(overlay) { if (!overlay) speakerSel = false }
+    fun toggleMute() {
+        muted = !muted
+        android.widget.Toast.makeText(view.context, if (muted) "Geluid uit" else "Geluid aan", android.widget.Toast.LENGTH_SHORT).show()
+    }
     LaunchedEffect(muted) { pb.setMuted(muted) }
     DisposableEffect(Unit) { onDispose { pb.setMuted(App.instance.repo.previewMuted.value) } }
 
@@ -144,17 +151,18 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
             .onKeyEvent { e ->
                 if (e.type != KeyEventType.KeyDown) return@onKeyEvent false
                 when (e.key.nativeKeyCode) {
-                    AKeyEvent.KEYCODE_DPAD_UP, AKeyEvent.KEYCODE_CHANNEL_DOWN -> { zap(-1); true }
-                    AKeyEvent.KEYCODE_DPAD_DOWN, AKeyEvent.KEYCODE_CHANNEL_UP -> { zap(1); true }
-                    AKeyEvent.KEYCODE_DPAD_LEFT, AKeyEvent.KEYCODE_DPAD_RIGHT, AKeyEvent.KEYCODE_MUTE,
-                    AKeyEvent.KEYCODE_VOLUME_MUTE -> {
-                        muted = !muted
-                        android.widget.Toast.makeText(view.context, if (muted) "Geluid uit" else "Geluid aan", android.widget.Toast.LENGTH_SHORT).show()
+                    AKeyEvent.KEYCODE_DPAD_UP, AKeyEvent.KEYCODE_CHANNEL_DOWN -> { speakerSel = false; zap(-1); true }
+                    AKeyEvent.KEYCODE_DPAD_DOWN, AKeyEvent.KEYCODE_CHANNEL_UP -> { speakerSel = false; zap(1); true }
+                    AKeyEvent.KEYCODE_DPAD_LEFT, AKeyEvent.KEYCODE_DPAD_RIGHT -> {
+                        // ◀ ▶ selects the speaker (yellow ring); press again to deselect
+                        speakerSel = if (overlay) !speakerSel else true
+                        showOverlay()
                         true
                     }
+                    AKeyEvent.KEYCODE_MUTE, AKeyEvent.KEYCODE_VOLUME_MUTE -> { toggleMute(); true }
                     AKeyEvent.KEYCODE_DPAD_CENTER, AKeyEvent.KEYCODE_ENTER, AKeyEvent.KEYCODE_NUMPAD_ENTER,
                     AKeyEvent.KEYCODE_INFO -> {
-                        toggleOverlay()
+                        if (overlay && speakerSel) { toggleMute(); showOverlay() } else toggleOverlay()
                         true
                     }
                     else -> false
@@ -231,7 +239,7 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
                     Spacer(Modifier.width(18.dp))
                     Column(horizontalAlignment = Alignment.End) {
                         Text(timeOf(now), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
-                        Text("▲▼ zappen  ·  ◀▶ geluid", color = Z.textDim, fontSize = 11.sp)
+                        Text("▲▼ zappen  ·  ◀▶ + OK geluid", color = Z.textDim, fontSize = 11.sp)
                     }
                 }
             }
@@ -245,9 +253,20 @@ fun PlayerScreen(now: Long, group: String, onBack: () -> Unit) {
                 if (muted) "Geluid aan" else "Geluid uit",
                 tint = if (muted) Z.fav else Color.White,
                 modifier = Modifier.align(Alignment.TopStart).padding(16.dp)
-                    .background(Color(0x88000000), RoundedCornerShape(8.dp))
+                    .then(
+                        if (speakerSel && overlay) Modifier
+                            .border(4.dp, Z.focus, RoundedCornerShape(10.dp))
+                            .background(Z.focus.copy(alpha = 0.35f), RoundedCornerShape(10.dp))
+                        else Modifier.background(Color(0x88000000), RoundedCornerShape(8.dp))
+                    )
                     .pointerInput(Unit) { detectTapGestures(onTap = { muted = !muted }) }
-                    .padding(8.dp).size(32.dp),
+                    .padding(8.dp).size(if (speakerSel && overlay) 40.dp else 32.dp),
+            )
+            if (speakerSel && overlay) Text(
+                if (muted) "OK = geluid aan" else "OK = geluid uit",
+                color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.align(Alignment.TopStart).padding(start = 92.dp, top = 30.dp)
+                    .background(Color(0x88000000), RoundedCornerShape(6.dp)).padding(horizontal = 8.dp, vertical = 4.dp),
             )
         }
 
